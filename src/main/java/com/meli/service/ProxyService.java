@@ -29,7 +29,7 @@ public class ProxyService {
     //    String domain = "api.mercadolibre.com";
     private final static Logger logger = LogManager.getLogger(ProxyService.class);
 
-    @Retryable(exclude = {HttpStatusCodeException.class}, include = Exception.class, backoff = @Backoff(delay = 5000, multiplier = 4.0), maxAttempts = 4)
+    @Retryable(exclude = {HttpStatusCodeException.class}, include = Exception.class, backoff = @Backoff(delay = 5000, multiplier = 1.0), maxAttempts = 1)
     public ResponseEntity<String> processProxyRequest(String body, HttpMethod method, HttpServletRequest request, HttpServletResponse response, String traceId) throws URISyntaxException {
         ThreadContext.put("traceId", traceId);
         String requestUrl = request.getRequestURI();
