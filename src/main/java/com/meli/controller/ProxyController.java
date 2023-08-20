@@ -7,6 +7,8 @@ import io.github.bucket4j.Bucket4j;
 import io.github.bucket4j.Refill;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
@@ -19,10 +21,11 @@ import org.springframework.web.bind.annotation.RestController;
 import java.net.URISyntaxException;
 import java.time.Duration;
 import java.util.UUID;
+
 @CrossOrigin(origins = "*")
 @RestController
 public class ProxyController {
-
+    private final static Logger log = LogManager.getLogger(ProxyController.class);
     private final Bucket bucketCategories;
     private final Bucket bucketSells;
 
@@ -47,11 +50,17 @@ public class ProxyController {
         return service.processProxyRequest(body, method, request, response, UUID.randomUUID().toString());
     }
 
+    @GetMapping("/ping")
+    public String ping() {
+        return "pong";
+    }
+
     @GetMapping("/sells/**")
     public ResponseEntity<String> sendSells(@RequestBody(required = false) String body, HttpMethod method, HttpServletRequest request, HttpServletResponse response) throws URISyntaxException {
         if (bucketSells.tryConsume(1)) {
             return service.processProxyRequest(body, method, request, response, UUID.randomUUID().toString());
         }
+        log.info("Too Many Requests");
         return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).body("Too Many Requests");
     }
 
@@ -60,6 +69,8 @@ public class ProxyController {
         if (bucketCategories.tryConsume(1)) {
             return service.processProxyRequest(body, method, request, response, UUID.randomUUID().toString());
         }
+        log.info("Too Many Requests");
         return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).body("Too Many Requests");
     }
 }
+
